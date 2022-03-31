@@ -1,8 +1,20 @@
-// ignore_for_file: prefer_const_constructors
-
+// ignore_for_file: prefer_const_constructors, unused_local_variable, unused_import, non_constant_identifier_names, import_of_legacy_library_into_null_safe, avoid_print, missing_return
+//@dart =2.9
 import 'package:flutter/material.dart';
 
-void main() {
+import 'package:http/http.dart' as http;
+import 'package:async/async.dart';
+import 'dart:convert';
+
+const request =
+    "https://api.hgbrasil.com/finance?format=json-cors&key=de791ef7W";
+
+Future<Map> getData() async {
+  http.Response response = await http.get(request);
+  json.decode(response.body);
+}
+
+void main() async {
   runApp(MaterialApp(
     home: Home(),
     debugShowCheckedModeBanner: false,
@@ -10,7 +22,7 @@ void main() {
 }
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({Key key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -22,94 +34,50 @@ class _HomeState extends State<Home> {
   TextEditingController dolarController = TextEditingController();
   TextEditingController euroController = TextEditingController();
 
-  void calculate() {
-    setState(() {
-      double real = double.parse(realController.text);
-      double dolar = double.parse(dolarController.text);
-      double euro = double.parse(euroController.text);
-    });
-  }
+  double real;
+  double dolar;
+  double euro;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey,
       appBar: AppBar(
         title: Text("\$ Conversor \$"), //Titulo
         centerTitle: true, //ajuste do titulo na barra
         backgroundColor: Colors.blueGrey, // cor de fundo
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-            10, 0, 10, 0), //Deixa um espaço da borda da tela
-        child: Form(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment
-                .stretch, //Estica a coluna para pegar o maximo de tamanho possivel
-            children: [
-              Icon(
-                Icons.attach_money,
-                size: 120.0,
-                color: Color(0xff0149FF),
-              ),
-              TextField(
-                controller: realController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  prefix: Text('R\$'),
-                  labelText: "Real",
-                  labelStyle:
-                      TextStyle(color: Color(0xff0149FF), fontSize: 25.0),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff0149FF),
-                    ),
-                  ),
+      body: FutureBuilder<Map>(
+        future: getData(),
+        builder: (context, snapShot) {
+          switch (snapShot.connectionState) {
+            case ConnectionState.none:
+            case ConnectionState.waiting:
+              return Center(
+                child: Text(
+                  "Carregando dados.",
+                  style: TextStyle(color: Colors.amber, fontSize: 25.0),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.left,
-              ),
-              SizedBox(
-                height: 15,
-              ),
-              TextField(
-                controller: dolarController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  prefix: Text('US\$'),
-                  labelText: "Dolar",
-                  labelStyle:
-                      TextStyle(color: Color(0xff0149FF), fontSize: 25.0),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff0149FF),
-                    ),
+              );
+            default:
+              if (snapShot.hasError) {
+                return Center(
+                  child: Text(
+                    "Erro ao Carregar Dadors :(.",
+                    style: TextStyle(color: Colors.amber, fontSize: 25.0),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                textAlign: TextAlign.left,
-              ),
-              SizedBox(
-                height: 15,
-              ),
-              TextField(
-                controller: euroController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  prefix: Text('€'),
-                  labelText: "Euro",
-                  labelStyle:
-                      TextStyle(color: Color(0xff0149FF), fontSize: 25.0),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff0149FF),
-                    ),
-                  ),
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ],
-          ),
-        ),
+                );
+              } else {
+                dolar = ;
+                return Container(
+                  color: Colors.green,
+                );
+              }
+          }
+        },
       ),
-      backgroundColor: Colors.grey,
     );
   }
 }
