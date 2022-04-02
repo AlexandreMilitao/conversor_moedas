@@ -18,6 +18,16 @@ void main() async {
   runApp(MaterialApp(
     home: Home(),
     debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+        hintColor: Colors.black,
+        primaryColor: Colors.blue,
+        inputDecorationTheme: InputDecorationTheme(
+          enabledBorder:
+              OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+          focusedBorder:
+              OutlineInputBorder(borderSide: BorderSide(color: Colors.black)),
+          hintStyle: TextStyle(color: Colors.black),
+        )),
   ));
 }
 
@@ -30,12 +40,32 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //Controllers campos
-  TextEditingController realController = TextEditingController();
-  TextEditingController dolarController = TextEditingController();
-  TextEditingController euroController = TextEditingController();
+  final realController = TextEditingController();
+  final dolarController = TextEditingController();
+  final euroController = TextEditingController();
 
   double dolar;
   double euro;
+  double real;
+
+  void _realChanged(String text) {
+    double real = double.parse(realController.text);
+    //fixa a casa decimal
+    dolarController.text = (real / dolar).toStringAsFixed(2);
+    euroController.text = (real / euro).toStringAsFixed(2);
+  }
+
+  void _dolarChanged(String text) {
+    double dolar = double.parse(dolarController.text);
+    realController.text = (dolar / real).toStringAsFixed(2);
+    euroController.text = (dolar / euro).toStringAsFixed(2);
+  }
+
+  void _euroChanged(String text) {
+    double euro = double.parse(euroController.text);
+    realController.text = (euro / real).toStringAsFixed(2);
+    dolarController.text = (euro / dolar).toStringAsFixed(2);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +106,8 @@ class _HomeState extends State<Home> {
                 euro = snapshot.data["results"]["currencies"]["EUR"]["buy"];
 
                 return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                      10, 0, 10, 0), //Deixa um espaço da borda da tela
+                  padding:
+                      EdgeInsets.all(10), //Deixa um espaço da borda da tela
                   child: Form(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment
@@ -88,66 +118,14 @@ class _HomeState extends State<Home> {
                           size: 150.0,
                           color: Color(0xff0149FF),
                         ),
-                        TextField(
-                          controller: realController,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.left,
-                          decoration: InputDecoration(
-                            prefix: Text('R\$'),
-                            labelText: "Real",
-                            labelStyle: TextStyle(
-                              color: Color(0xff0149FF),
-                              fontSize: 25.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff0149FF),
-                              ),
-                            ),
-                          ),
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 25.0,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 15,
-                        ),
-                        TextField(
-                          controller: dolarController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            prefix: Text('US\$'),
-                            labelText: "Dólar",
-                            labelStyle: TextStyle(
-                                color: Color(0xff0149FF), fontSize: 25.0),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff0149FF),
-                              ),
-                            ),
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                        SizedBox(
-                          height: 15,
-                        ),
-                        TextField(
-                          controller: euroController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            prefix: Text('€'),
-                            labelText: "Euro",
-                            labelStyle: TextStyle(
-                                color: Color(0xff0149FF), fontSize: 25.0),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff0149FF),
-                              ),
-                            ),
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
+                        buildTextField(
+                            "Real", "R\$", realController, _realChanged),
+                        Divider(),
+                        buildTextField(
+                            "Dólar", "US\$", dolarController, _dolarChanged),
+                        Divider(),
+                        buildTextField(
+                            "Euros", "€", euroController, _euroChanged),
                       ],
                     ),
                   ),
@@ -158,4 +136,22 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+}
+
+buildTextField(
+    String label, String prefix, TextEditingController c, Function f) {
+  return TextField(
+    controller: c,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(
+      prefixText: prefix,
+      labelText: label,
+      labelStyle: TextStyle(color: Color(0xff0149FF), fontSize: 25.0),
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: Color(0xff0149FF)),
+      ),
+    ),
+    textAlign: TextAlign.left,
+    onChanged: f,
+  );
 }
