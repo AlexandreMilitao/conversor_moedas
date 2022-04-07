@@ -46,25 +46,43 @@ class _HomeState extends State<Home> {
 
   double dolar;
   double euro;
-  double real;
+
+  void _clearAll() {
+    realController.text = "";
+    dolarController.text = "";
+    euroController.text = "";
+  }
 
   void _realChanged(String text) {
-    double real = double.parse(realController.text);
-    //fixa a casa decimal
-    dolarController.text = (real / dolar).toStringAsFixed(2);
-    euroController.text = (real / euro).toStringAsFixed(2);
+    if (text.isEmpty) {
+      _clearAll();
+    } else {
+      double real = double.parse(text);
+
+      //fixa a casa decimal
+      dolarController.text = (real / dolar).toStringAsFixed(2);
+      euroController.text = (real / euro).toStringAsFixed(2);
+    }
   }
 
   void _dolarChanged(String text) {
-    double dolar = double.parse(dolarController.text);
-    realController.text = (dolar / real).toStringAsFixed(2);
-    euroController.text = (dolar / euro).toStringAsFixed(2);
+    if (text.isEmpty) {
+      _clearAll();
+    } else {
+      double dolar = double.parse(text);
+      realController.text = (dolar * this.dolar).toStringAsFixed(2);
+      euroController.text = (dolar * this.dolar / euro).toStringAsFixed(2);
+    }
   }
 
   void _euroChanged(String text) {
-    double euro = double.parse(euroController.text);
-    realController.text = (euro / real).toStringAsFixed(2);
-    dolarController.text = (euro / dolar).toStringAsFixed(2);
+    if (text.isEmpty) {
+      _clearAll();
+    } else {
+      double euro = double.parse(text);
+      realController.text = (euro * this.euro).toStringAsFixed(2);
+      dolarController.text = (euro * this.euro / dolar).toStringAsFixed(2);
+    }
   }
 
   @override
@@ -102,32 +120,29 @@ class _HomeState extends State<Home> {
                   ),
                 );
               } else {
-                dolar = snapshot.data["results"]["currencies"]["EUR"]["buy"];
+                dolar = snapshot.data["results"]["currencies"]["USD"]["buy"];
                 euro = snapshot.data["results"]["currencies"]["EUR"]["buy"];
-
                 return SingleChildScrollView(
                   padding:
                       EdgeInsets.all(10), //Deixa um espaço da borda da tela
-                  child: Form(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment
-                          .stretch, //Estica a coluna para pegar o maximo de tamanho possivel
-                      children: [
-                        Icon(
-                          Icons.monetization_on,
-                          size: 150.0,
-                          color: Color(0xff0149FF),
-                        ),
-                        buildTextField(
-                            "Real", "R\$", realController, _realChanged),
-                        Divider(),
-                        buildTextField(
-                            "Dólar", "US\$", dolarController, _dolarChanged),
-                        Divider(),
-                        buildTextField(
-                            "Euros", "€", euroController, _euroChanged),
-                      ],
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment
+                        .stretch, //Estica a coluna para pegar o maximo de tamanho possivel
+                    children: [
+                      Icon(
+                        Icons.monetization_on,
+                        size: 150.0,
+                        color: Color(0xff0149FF),
+                      ),
+                      buildTextField(
+                          "Real", "R\$", realController, _realChanged),
+                      Divider(),
+                      buildTextField(
+                          "Dólar", "US\$", dolarController, _dolarChanged),
+                      Divider(),
+                      buildTextField(
+                          "Euros", "€", euroController, _euroChanged),
+                    ],
                   ),
                 );
               }
@@ -138,7 +153,7 @@ class _HomeState extends State<Home> {
   }
 }
 
-buildTextField(
+Widget buildTextField(
     String label, String prefix, TextEditingController c, Function f) {
   return TextField(
     controller: c,
